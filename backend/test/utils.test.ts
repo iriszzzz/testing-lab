@@ -21,7 +21,8 @@ describe('math utils testing', () => {
 
   describe('fabonacci testing', () => {
     it('should return 1 when n is 1', () => {
-      expect(fabonacci(1)).toBe(1)
+     // TODO: fix the test
+      expect.fail('not implemented')
     })
     it('should return 1 when n is 2', () => {
       // TODO: fix the test
