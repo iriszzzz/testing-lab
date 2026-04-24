@@ -67,18 +67,79 @@ describe('Todo API Testing', () => {
 
   test('Given a valid ID and status, When receive a PUT /api/v1/todos/:id request, Then it should response the updated todo object', async () => {
     // arrange: mock the repo function to return an updated todo object
+    const id = '1'
+    const updatedTodo: Todo = {
+      id: id,
+      name: 'updated todo',
+      description: 'updated description',
+      status: true
+    }
+    // Mock updateTodo
+    vi.spyOn(TodoRepo, 'updateTodoById').mockImplementation(async () => updatedTodo)
 
     // act: receive a PUT /api/v1/todos/:id request
+    const response = await server.inject({
+      method: 'PUT',
+      url: `/api/v1/todos/${id}`,
+      payload: {
+        status: true
+      }
+    })
 
     // assert: response should be the updated todo object
+    expect(response.statusCode).toBe(200)
+    const result = JSON.parse(response.body)['todo']
+    expect(result).toStrictEqual(updatedTodo)
   })
 
   test('Given an invalid ID, When receive a PUT /api/v1/todos/:id request, Then it should response with status code 404', async () => {
     // arrange: mock the repo function to return null
+    vi.spyOn(TodoRepo, 'updateTodoById').mockImplementation(async () => null)
 
     // act: receive a PUT /api/v1/todos/:id request
+    const response = await server.inject({
+      method: 'PUT',
+      url: '/api/v1/todos/non-existent-id',
+      payload: {
+        status: true
+      }
+    })
 
     // assert: response should with status code 404
+    expect(response.statusCode).toBe(404)
+  })
 
+  // test('When receive a POST /api/v1/todos request, Then it should response with status code 201', async () => {
+  //   // Arrange: Preparing fake documents and mock
+  //   const newTodo = { id: '3', name: 'new todo', description: 'desc', status: false }
+
+  //   vi.spyOn(TodoRepo, 'createTodo').mockResolvedValue(newTodo)
+
+  //   // Act
+  //   const response = await server.inject({
+  //     method: 'POST',
+  //     url: '/api/v1/todos',
+  //     payload: { name: 'new todo', description: 'desc' }
+  //   })
+
+  //   // Assert
+  //   expect(response.statusCode).toBe(201)
+  //   const result = JSON.parse(response.body)['todo']
+  //   expect(result.name).toBe('new todo')
+  // })
+
+  test('When POST /api/v1/todos fails, Then it should response with status code 500', async () => {
+    // Arrange: addition failure
+    vi.spyOn(TodoRepo, 'createTodo').mockRejectedValue(new Error('Internal Crash'))
+
+    // Act
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/todos',
+      payload: { name: 'fail todo' }
+    })
+
+    // Assert
+    expect(response.statusCode).toBe(500)
   })
 })
